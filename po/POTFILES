@@ -1,0 +1,3 @@
+src/Application.vala
+data/dockerly.desktop.in
+data/dockerly.appdata.xml.in

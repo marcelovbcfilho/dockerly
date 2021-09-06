@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Dockerly
+GenericName=Docker manager
+Comment=Simple docker container manager
+Categories=Utility;Education;
+Exec=com.github.marcelovbcfilho.dockerly
+Icon=com.github.marcelovbcfilho.dockerly
+Terminal=false
+Type=Application
+Keywords=Hello;World;Example;
