@@ -4,6 +4,9 @@
  */
 
 public class Dockerly.Application : Gtk.Application {
+
+    GLib.List<Dockerly.ContainerDTO> containers = new GLib.List<Dockerly.ContainerDTO>();
+
     public Application () {
         Object (
             application_id: "com.github.marcelovbcfilho.dockerly",
@@ -44,7 +47,7 @@ public class Dockerly.Application : Gtk.Application {
 
                 Json.Array containers_json_array = parser.get_root ().get_array ();
                 foreach (Json.Node container_json_node in containers_json_array.get_elements ()) {
-                    containers.append (new Dockerly.ContainerDTO (container_json_node.get_object ()));
+                    this.containers.append (new Dockerly.ContainerDTO (container_json_node.get_object ()));
                 }
             } catch (GLib.Error e) {
                 printerr ("Error formatting json: %s", e.message);
@@ -59,14 +62,14 @@ public class Dockerly.Application : Gtk.Application {
         set_accels_for_action ("app.quit",  {"<Control>q"});
 
         var main_window = new Gtk.ApplicationWindow (this) {
-            default_height = 300,
-            default_width = 300,
-            title = _("First gtk app")
+            default_height = 500,
+            default_width = 800,
+            title = _("Dockerly")
         };
 
         var grid = new Gtk.Grid () {
-            column_spacing = 6,
-            row_spacing = 6
+            column_spacing = 12,
+            row_spacing = 12
         };
     
         var headerbar = new Gtk.HeaderBar () {
@@ -74,20 +77,20 @@ public class Dockerly.Application : Gtk.Application {
             show_close_button = true
         };
 
-        var button = new Gtk.Button.from_icon_name ("process-stop", Gtk.IconSize.LARGE_TOOLBAR) {
-            action_name = "app.quit",
-            tooltip_markup = Granite.markup_accel_tooltip (
-                get_accels_for_action ("app.quit"),
-                "Quit"
-            )
+        Gtk.ListBox left_list_box = new Gtk.ListBox ();
+
+        grid.attach (left_list_box, 0, 0);
+
+        Gtk.Grid right_grid = new Gtk.Grid () {
+            column_spacing = 6
         };
-        
-        headerbar.add (button);
+
+        grid.attach (right_grid, 1, 0);
 
         // adding all containers to screen
-        for (int i = 0; i < containers.length (); i++) {
-            grid.attach (new Gtk.Label(containers.nth_data (i).id), 0, i + 3);
-            grid.attach (new Gtk.Label(containers.nth_data (i).names), 1, i + 3);
+        for (int i = 0; i < this.containers.length (); i++) {
+            Dockerly.Widgets.SourceRow row = new Dockerly.Widgets.SourceRow (this.containers.nth_data (i));
+            left_list_box.prepend (row);
         }
 
         main_window.add (grid);
@@ -100,6 +103,22 @@ public class Dockerly.Application : Gtk.Application {
         // Charging bar
         Granite.Services.Application.set_progress_visible.begin (true);
         Granite.Services.Application.set_progress.begin (0.2f);
+
+        left_list_box.row_selected.connect ((row) => {
+            if (row != null) {
+                if ( row is Dockerly.Widgets.SourceRow) {
+                    var source_row = (Dockerly.Widgets.SourceRow) row;
+                    print("Chegou na alteracao da right grid: %s", source_row.container.id);
+                    right_grid.remove_column (0);
+                    var title = new Gtk.Label ("Id do container");
+                    title.show ();
+                    right_grid.attach (title, 0, 0);
+                    var content = new Gtk.Label (source_row.container.id);
+                    content.show ();
+                    right_grid.attach (content, 0, 1);
+                }
+            }
+        });
 
         main_window.show_all ();
 

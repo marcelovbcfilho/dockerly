@@ -12,6 +12,7 @@ executable(
     meson.project_name(),
     'src/Application.vala',
     'src/domain/docker/DockerlyContainerDTO.vala',
+    'src/Widgets/SourceRow.vala',
     dependencies: [
         dependency('granite', version: '>=5.2.4'), # 5.2.4 is the first release to support the Launcher API
         dependency('gtk+-3.0'),
